@@ -6,6 +6,4 @@ import org.springframework.stereotype.Repository;
 import kbui.com.pine.entities.task.TaskEntity;
 
 @Repository
-public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
-  
-}
+public interface TaskRepository extends JpaRepository<TaskEntity, Long> {}

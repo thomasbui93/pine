@@ -17,13 +17,24 @@ public class TaskService {
   TaskRepository taskRepository;
 
   public List<TaskEntity> getTasks(Integer page, Integer size) {
-    Pageable paging = PageRequest.of(page, size);
+    Pageable paging = PageRequest.of(page - 1, size);
     Page<TaskEntity> tasks = taskRepository.findAll(paging);
     return tasks.getContent();
   }
 
   public TaskEntity getTask(Long id) {
-    return taskRepository.getOne(id);
+    return taskRepository.findById(id).get();
+  }
+
+  public TaskEntity updateTask(Long id, TaskEntity entity) {
+    TaskEntity task = taskRepository.findById(id).get();
+    task.setStatus(entity.getStatus());
+    taskRepository.save(task);
+    return task;
+  }
+
+  public void removeTask(Long id) {
+    taskRepository.deleteById(id);
   }
 
   public TaskEntity createTask(TaskEntity task) {
