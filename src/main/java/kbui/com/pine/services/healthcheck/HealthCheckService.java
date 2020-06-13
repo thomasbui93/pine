@@ -2,10 +2,8 @@ package kbui.com.pine.services.healthcheck;
 
 import java.util.Arrays;
 import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import kbui.com.pine.models.healthcheck.Health;
+import org.springframework.stereotype.Service;
 
 @Service
 public class HealthCheckService {

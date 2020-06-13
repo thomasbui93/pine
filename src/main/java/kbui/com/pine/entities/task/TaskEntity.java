@@ -1,26 +1,20 @@
 package kbui.com.pine.entities.task;
 
 import java.sql.Timestamp;
-import java.util.Set;
-
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 public class TaskEntity {
-  @Id
-  @GeneratedValue
-  @Getter
-  private Long id;
+  @Id @GeneratedValue @Getter private Long id;
 
   @Getter
   @Setter
@@ -29,7 +23,7 @@ public class TaskEntity {
 
   @Getter
   @Setter
-  @Column(nullable = false, updatable=false)
+  @Column(nullable = false, updatable = false)
   protected String messages;
 
   @Setter
@@ -38,13 +32,7 @@ public class TaskEntity {
   @Column(columnDefinition = "varchar(32) default 'TODO'")
   private TaskStatus status;
 
-  @Getter
-  @Setter
-  @CreationTimestamp
-  private Timestamp createdAt;
-  
-  @Getter
-  @Setter
-  @UpdateTimestamp
-  private Timestamp updatedAt;
+  @Getter @Setter @CreationTimestamp private Timestamp createdAt;
+
+  @Getter @Setter @UpdateTimestamp private Timestamp updatedAt;
 }
