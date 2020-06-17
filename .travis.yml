@@ -13,5 +13,5 @@ jdk:
   - oraclejdk11
 
 script:
-  - MYSQL_USER=travis MYSQL_PASSWORD= ./mvnw flyway:migrate
+  - ./mvnw -Dflyway.url=jdbc:mysql://localhost:3306/pine -Dflyway.user=travis -Dflyway.password= flyway:migrate
   - MYSQL_USER=travis MYSQL_PASSWORD= ./mvnw test
