@@ -1,7 +1,9 @@
 package kbui.com.pine.services.task;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+
 import kbui.com.pine.entities.task.TaskEntity;
 import kbui.com.pine.respositories.task.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +12,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
+@Transactional
 public class TaskService {
   @Autowired TaskRepository taskRepository;
 
@@ -45,5 +49,20 @@ public class TaskService {
 
   public TaskEntity createOne(TaskEntity task) {
     return taskRepository.save(task);
+  }
+
+  public List<TaskEntity> createBatch(TaskEntity taskData) {
+    TaskEntity task = this.createOne(taskData);
+    List<TaskEntity> tasks = new ArrayList<TaskEntity>();
+    String[] messages = task.getMessages().split(" ");
+    for (String message : messages) {
+      TaskEntity subTask = new TaskEntity();
+      subTask.setMessages(message);
+      subTask.setParentId(task.getId());
+      tasks.add(subTask);
+    }
+    tasks = this.taskRepository.saveAll(tasks);
+    tasks.add(task);
+    return tasks;
   }
 }

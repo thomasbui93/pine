@@ -22,7 +22,7 @@ public class TaskControllerTests {
   @Test
   public void taskPostingAPI() throws Exception {
     String url = "http://localhost:" + port + "/api/tasks";
-    HttpEntity<TaskEntity> request = new HttpEntity<TaskEntity>(this.createDummyTask());
+    HttpEntity<TaskEntity> request = new HttpEntity<TaskEntity>(this.createDummyTask(""));
     ResponseEntity<TaskEntity> task =
         this.restTemplate.postForEntity(url, request, TaskEntity.class);
     assertThat(task.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -34,32 +34,44 @@ public class TaskControllerTests {
     TaskEntity existingTask = this.persistDummyTask();
     String url = "http://localhost:" + port + "/api/tasks/" + existingTask.getId();
 
-    TaskEntity updatingTask = this.createDummyTask();
+    TaskEntity updatingTask = this.createDummyTask("");
     updatingTask.setStatus(TaskStatus.FAILED);
 
-    HttpEntity<TaskEntity> request = new HttpEntity<TaskEntity>(this.createDummyTask());
+    HttpEntity<TaskEntity> request = new HttpEntity<TaskEntity>(this.createDummyTask(""));
     this.restTemplate.put(url, request);
   }
 
   @Test
   public void taskListReadingAPI() throws Exception {
     String url = "http://localhost:" + port + "/api/tasks";
-    HttpEntity<TaskEntity> request = new HttpEntity<TaskEntity>(this.createDummyTask());
+    HttpEntity<TaskEntity> request = new HttpEntity<TaskEntity>(this.createDummyTask(""));
     this.restTemplate.postForEntity(url, request, TaskEntity.class);
     TaskEntity[] tasks = this.restTemplate.getForObject(url, TaskEntity[].class);
-    assertThat(tasks.length).isEqualTo(1);
+    assertThat(tasks.length).isEqualTo(4);
   }
 
-  public TaskEntity createDummyTask() {
+  @Test
+  public void batchInsertAPI() throws Exception {
+    String url = "http://localhost:" + port + "/api/tasks/batch";
+    HttpEntity<TaskEntity> request = new HttpEntity<TaskEntity>(this.createDummyTask("https://njt1.now.sh/ https://njt2.now.sh/"));
+    ResponseEntity<TaskEntity[]> tasks = this.restTemplate.postForEntity(url, request, TaskEntity[].class);
+    assertThat(tasks.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(tasks.getBody().length).isEqualTo(3);
+  }
+
+  public TaskEntity createDummyTask(String messages) {
+    if (messages.length() == 0) {
+      messages = "https://njt.now.sh/";
+    }
     TaskEntity entity = new TaskEntity();
     entity.setStatus(TaskStatus.TODO);
-    entity.setMessages("https://njt.now.sh/");
+    entity.setMessages(messages);
     return entity;
   }
 
   public TaskEntity persistDummyTask() {
     String url = "http://localhost:" + port + "/api/tasks";
-    HttpEntity<TaskEntity> request = new HttpEntity<TaskEntity>(this.createDummyTask());
+    HttpEntity<TaskEntity> request = new HttpEntity<TaskEntity>(this.createDummyTask(""));
     ResponseEntity<TaskEntity> task =
         this.restTemplate.postForEntity(url, request, TaskEntity.class);
     return task.getBody();

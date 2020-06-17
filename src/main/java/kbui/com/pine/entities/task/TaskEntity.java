@@ -6,15 +6,19 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
+@Table(name = "tasks")
 public class TaskEntity {
-  @Id @GeneratedValue @Getter private Long id;
+  @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Getter private Long id;
 
   @Getter
   @Setter
@@ -30,7 +34,7 @@ public class TaskEntity {
   @Getter
   @Enumerated(EnumType.STRING)
   @Column(columnDefinition = "varchar(32) default 'TODO'")
-  private TaskStatus status;
+  private TaskStatus status = TaskStatus.TODO;
 
   @Getter @Setter @CreationTimestamp private Timestamp createdAt;
 
