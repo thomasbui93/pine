@@ -4,7 +4,8 @@ cache:
   - $HOME/.m2
 
 services:
-  - mysql  
+  - mysql
+  - redis 
 
 before_install:
   - mysql -e 'CREATE DATABASE IF NOT EXISTS pine;'

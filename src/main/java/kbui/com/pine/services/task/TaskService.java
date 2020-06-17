@@ -7,6 +7,9 @@ import java.util.NoSuchElementException;
 import kbui.com.pine.entities.task.TaskEntity;
 import kbui.com.pine.respositories.task.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,12 +23,14 @@ import org.springframework.web.server.ResponseStatusException;
 public class TaskService {
   @Autowired TaskRepository taskRepository;
 
+  @Cacheable(value = "tasks", key = "#page-#size")
   public List<TaskEntity> getAll(Integer page, Integer size) {
     Pageable paging = PageRequest.of(page - 1, size);
     Page<TaskEntity> tasks = taskRepository.findAll(paging);
     return tasks.getContent();
   }
 
+  @Cacheable(value = "task", key = "#id")
   public TaskEntity getOne(Long id) {
     try {
       return taskRepository.findById(id).get();
@@ -36,6 +41,7 @@ public class TaskService {
     }
   }
 
+  @CachePut(value = "task", key = "#id")
   public TaskEntity updateOne(Long id, TaskEntity entity) {
     TaskEntity task = taskRepository.findById(id).get();
     task.setStatus(entity.getStatus());
@@ -43,6 +49,7 @@ public class TaskService {
     return task;
   }
 
+  @CacheEvict(value = "task", key = "#id")
   public void removeOne(Long id) {
     taskRepository.deleteById(id);
   }
