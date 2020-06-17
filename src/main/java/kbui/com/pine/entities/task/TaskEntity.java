@@ -1,5 +1,6 @@
 package kbui.com.pine.entities.task;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,7 +18,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "tasks")
-public class TaskEntity {
+public class TaskEntity implements Serializable {
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Getter private Long id;
 
   @Getter
