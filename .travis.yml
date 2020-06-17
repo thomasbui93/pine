@@ -1,18 +1,17 @@
 language: java
 cache:
   directories:
-  - .autoconf
   - $HOME/.m2
 
 services:
   - mysql  
 
 before_install:
-  - mysql -e 'CREATE DATABASE IF NOT EXISTS pine_test;'
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS pine;'
 
 jdk:
   - oraclejdk11
 
 script:
-  - MYSQL_HOST=127.0.0.1 MYSQL_USER=travis MYSQL_PASSWORD= ./mvnw flyway:migrate
-  - MYSQL_HOST=127.0.0.1 MYSQL_USER=travis MYSQL_PASSWORD= ./mvnw test
+  - MYSQL_USER=travis MYSQL_PASSWORD= ./mvnw flyway:migrate
+  - MYSQL_USER=travis MYSQL_PASSWORD= ./mvnw test
