@@ -4,5 +4,20 @@ cache:
   - .autoconf
   - $HOME/.m2
 
+env:
+  - MYSQL_HOST=127.0.0.1
+  - MYSQL_USER=travis
+  - MYSQL_PASSWORD=
+
+services:
+  - mysql  
+
+before_install:
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS pine_test;'
+
 jdk:
   - oraclejdk11
+
+script:
+  - ./mvnw flyway:migrate
+  - ./mvnw test
