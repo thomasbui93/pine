@@ -1,0 +1,17 @@
+language: java
+cache:
+  directories:
+  - $HOME/.m2
+
+services:
+  - mysql  
+
+before_install:
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS pine;'
+
+jdk:
+  - oraclejdk11
+
+script:
+  - ./mvnw -Dflyway.url=jdbc:mysql://localhost:3306/pine -Dflyway.user=travis -Dflyway.password= flyway:migrate
+  - MYSQL_USER=travis MYSQL_PASSWORD= ./mvnw test

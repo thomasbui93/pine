@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ "$1" = "migrate" ]
+then
+  eval "mvn -Dflyway.url=jdbc:mysql://192.168.42.45:3306/pine -Dflyway.user=admin -Dflyway.password=123456 flyway:migrate"
+else
+  eval "MYSQL_HOST=192.168.42.45 MYSQL_USER=admin MYSQL_PASSWORD=123456 mvn -Dlogging.level.root=ERROR spring-boot:run"
+fi
