@@ -4,11 +4,6 @@ cache:
   - .autoconf
   - $HOME/.m2
 
-env:
-  - MYSQL_HOST=127.0.0.1
-  - MYSQL_USER=travis
-  - MYSQL_PASSWORD=
-
 services:
   - mysql  
 
@@ -19,5 +14,5 @@ jdk:
   - oraclejdk11
 
 script:
-  - ./mvnw flyway:migrate
-  - ./mvnw test
+  - MYSQL_HOST=127.0.0.1 MYSQL_USER=travis MYSQL_PASSWORD= ./mvnw flyway:migrate
+  - MYSQL_HOST=127.0.0.1 MYSQL_USER=travis MYSQL_PASSWORD= ./mvnw test
