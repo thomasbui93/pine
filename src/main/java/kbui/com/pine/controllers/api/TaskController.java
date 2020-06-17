@@ -40,6 +40,11 @@ public class TaskController {
     return taskService.createOne(taskData);
   }
 
+  @PostMapping("/batch")
+  public List<TaskEntity> createBatch(@RequestBody TaskEntity taskData) {
+    return taskService.createBatch(taskData);
+  }
+
   @PutMapping("/{id}")
   public TaskEntity updateOne(@PathVariable Long id, @RequestBody TaskEntity taskData) {
     return taskService.updateOne(id, taskData);
