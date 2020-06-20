@@ -1,9 +1,9 @@
 package kbui.com.pine.exceptions.general;
 
-public class InternalErrorException extends RuntimeException {
+public class GenericErrorException extends RuntimeException {
   static final long serialVersionUID = -7034897190745766939L;
 
-  public InternalErrorException(String message) {
+  public GenericErrorException(String message) {
     super(message);
   }
 }

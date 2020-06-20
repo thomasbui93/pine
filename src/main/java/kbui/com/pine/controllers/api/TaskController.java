@@ -2,7 +2,7 @@ package kbui.com.pine.controllers.api;
 
 import java.util.List;
 import kbui.com.pine.entities.task.TaskEntity;
-import kbui.com.pine.exceptions.general.InternalErrorException;
+import kbui.com.pine.exceptions.task.TaskBatchCreationFailedException;
 import kbui.com.pine.exceptions.task.TaskCreationFailedException;
 import kbui.com.pine.exceptions.task.TaskDeletionFailedException;
 import kbui.com.pine.exceptions.task.TaskNotFoundException;
@@ -42,8 +42,6 @@ public class TaskController {
       return taskService.getOne(id);
     } catch (TaskNotFoundException ex) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, ex.getMessage());
-    } catch (InternalErrorException ex) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
   }
 
@@ -53,14 +51,16 @@ public class TaskController {
       return taskService.createOne(taskData);
     } catch (TaskCreationFailedException ex) {
       throw new ResponseStatusException(HttpStatus.NOT_MODIFIED, ex.getMessage());
-    } catch (InternalErrorException ex) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
   }
 
   @PostMapping("/batch")
-  public List<TaskEntity> createBatch(@RequestBody TaskEntity taskData) {
-    return taskService.createBatch(taskData);
+  public List<TaskEntity> createBatch(@RequestBody TaskEntity taskData) throws ResponseStatusException {
+    try {
+      return taskService.createBatch(taskData);
+    } catch (TaskBatchCreationFailedException ex) {
+      throw new ResponseStatusException(HttpStatus.NOT_MODIFIED, ex.getMessage());
+    }
   }
 
   @PutMapping("/{id}")
@@ -71,8 +71,6 @@ public class TaskController {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, ex.getMessage());
     } catch (TaskUpdateFailedException ex) {
       throw new ResponseStatusException(HttpStatus.NOT_MODIFIED, ex.getMessage());
-    } catch (InternalErrorException ex) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
   }
 
@@ -83,8 +81,6 @@ public class TaskController {
       taskService.removeOne(id);
     } catch (TaskDeletionFailedException ex) {
       throw new ResponseStatusException(HttpStatus.NOT_MODIFIED, ex.getMessage());
-    } catch (InternalErrorException ex) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
   }
 }

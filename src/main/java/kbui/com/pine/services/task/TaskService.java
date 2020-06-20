@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import kbui.com.pine.entities.task.TaskEntity;
-import kbui.com.pine.exceptions.general.InternalErrorException;
+import kbui.com.pine.exceptions.task.TaskBatchCreationFailedException;
 import kbui.com.pine.exceptions.task.TaskCreationFailedException;
 import kbui.com.pine.exceptions.task.TaskDeletionFailedException;
 import kbui.com.pine.exceptions.task.TaskNotFoundException;
@@ -34,18 +34,16 @@ public class TaskService {
   }
 
   @Cacheable(value = "task", key = "#id")
-  public TaskEntity getOne(Long id) throws TaskNotFoundException, InternalErrorException {
+  public TaskEntity getOne(Long id) throws TaskNotFoundException {
     try {
       return taskRepository.findById(id).get();
     } catch (NoSuchElementException exc) {
       throw new TaskNotFoundException(id);
-    } catch (Exception err) {
-      throw new InternalErrorException(err.getMessage());
     }
   }
 
   @CachePut(value = "task", key = "#id")
-  public TaskEntity updateOne(Long id, TaskEntity entity) {
+  public TaskEntity updateOne(Long id, TaskEntity entity) throws TaskNotFoundException, TaskUpdateFailedException {
     try {
       TaskEntity task = taskRepository.findById(id).get();
       task.setStatus(entity.getStatus());
@@ -55,8 +53,6 @@ public class TaskService {
       throw new TaskNotFoundException(id);
     } catch (IllegalArgumentException err) {
       throw new TaskUpdateFailedException(id);
-    } catch (Exception err) {
-      throw new InternalErrorException(err.getMessage());
     }
   }
 
@@ -66,8 +62,6 @@ public class TaskService {
       taskRepository.deleteById(id);
     } catch (IllegalArgumentException err) {
       throw new TaskDeletionFailedException(id);
-    } catch (Exception err) {
-      throw new InternalErrorException(err.getMessage());
     }
   }
 
@@ -76,23 +70,25 @@ public class TaskService {
       return taskRepository.save(task);
     } catch (IllegalArgumentException err) {
       throw new TaskCreationFailedException();
-    } catch (Exception err) {
-      throw new InternalErrorException(err.getMessage());
     }
   }
 
   public List<TaskEntity> createBatch(TaskEntity taskData) {
-    TaskEntity task = this.createOne(taskData);
-    List<TaskEntity> tasks = new ArrayList<TaskEntity>();
-    String[] messages = task.getMessages().split(" ");
-    for (String message : messages) {
-      TaskEntity subTask = new TaskEntity();
-      subTask.setMessages(message);
-      subTask.setParentId(task.getId());
-      tasks.add(subTask);
+    try {
+      TaskEntity task = this.createOne(taskData);
+      List<TaskEntity> tasks = new ArrayList<TaskEntity>();
+      String[] messages = task.getMessages().split(" ");
+      for (String message : messages) {
+        TaskEntity subTask = new TaskEntity();
+        subTask.setMessages(message);
+        subTask.setParentId(task.getId());
+        tasks.add(subTask);
+      }
+      tasks = this.taskRepository.saveAll(tasks);
+      tasks.add(task);
+      return tasks;
+    } catch (IllegalArgumentException err) {
+      throw new TaskBatchCreationFailedException();
     }
-    tasks = this.taskRepository.saveAll(tasks);
-    tasks.add(task);
-    return tasks;
   }
 }
