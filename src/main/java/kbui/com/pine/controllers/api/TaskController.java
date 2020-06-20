@@ -2,6 +2,11 @@ package kbui.com.pine.controllers.api;
 
 import java.util.List;
 import kbui.com.pine.entities.task.TaskEntity;
+import kbui.com.pine.exceptions.general.InternalErrorException;
+import kbui.com.pine.exceptions.task.TaskCreationFailedException;
+import kbui.com.pine.exceptions.task.TaskDeletionFailedException;
+import kbui.com.pine.exceptions.task.TaskNotFoundException;
+import kbui.com.pine.exceptions.task.TaskUpdateFailedException;
 import kbui.com.pine.services.task.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -31,13 +37,25 @@ public class TaskController {
 
   @GetMapping("/{id}")
   @ResponseBody
-  public TaskEntity getOne(@PathVariable Long id) {
-    return taskService.getOne(id);
+  public TaskEntity getOne(@PathVariable Long id) throws ResponseStatusException {
+    try {
+      return taskService.getOne(id);
+    } catch (TaskNotFoundException ex) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, ex.getMessage());
+    } catch (InternalErrorException ex) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    }
   }
 
   @PostMapping("")
-  public TaskEntity createOne(@RequestBody TaskEntity taskData) {
-    return taskService.createOne(taskData);
+  public TaskEntity createOne(@RequestBody TaskEntity taskData) throws ResponseStatusException {
+    try {
+      return taskService.createOne(taskData);
+    } catch (TaskCreationFailedException ex) {
+      throw new ResponseStatusException(HttpStatus.NOT_MODIFIED, ex.getMessage());
+    } catch (InternalErrorException ex) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    }
   }
 
   @PostMapping("/batch")
@@ -46,13 +64,27 @@ public class TaskController {
   }
 
   @PutMapping("/{id}")
-  public TaskEntity updateOne(@PathVariable Long id, @RequestBody TaskEntity taskData) {
-    return taskService.updateOne(id, taskData);
+  public TaskEntity updateOne(@PathVariable Long id, @RequestBody TaskEntity taskData) throws ResponseStatusException {
+    try {
+      return taskService.updateOne(id, taskData);
+    } catch (TaskNotFoundException ex) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, ex.getMessage());
+    } catch (TaskUpdateFailedException ex) {
+      throw new ResponseStatusException(HttpStatus.NOT_MODIFIED, ex.getMessage());
+    } catch (InternalErrorException ex) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    }
   }
 
   @DeleteMapping("/{id}")
   @ResponseStatus(value = HttpStatus.OK)
-  public void deleteOne(@PathVariable Long id) {
-    taskService.removeOne(id);
+  public void deleteOne(@PathVariable Long id) throws ResponseStatusException {
+    try {
+      taskService.removeOne(id);
+    } catch (TaskDeletionFailedException ex) {
+      throw new ResponseStatusException(HttpStatus.NOT_MODIFIED, ex.getMessage());
+    } catch (InternalErrorException ex) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    }
   }
 }
