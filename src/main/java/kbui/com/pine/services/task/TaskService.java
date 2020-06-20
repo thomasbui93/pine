@@ -5,6 +5,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import kbui.com.pine.entities.task.TaskEntity;
+import kbui.com.pine.exceptions.task.TaskBatchCreationFailedException;
+import kbui.com.pine.exceptions.task.TaskCreationFailedException;
+import kbui.com.pine.exceptions.task.TaskDeletionFailedException;
+import kbui.com.pine.exceptions.task.TaskNotFoundException;
+import kbui.com.pine.exceptions.task.TaskUpdateFailedException;
 import kbui.com.pine.respositories.task.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -13,10 +18,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @Transactional
@@ -31,45 +34,61 @@ public class TaskService {
   }
 
   @Cacheable(value = "task", key = "#id")
-  public TaskEntity getOne(Long id) {
+  public TaskEntity getOne(Long id) throws TaskNotFoundException {
     try {
       return taskRepository.findById(id).get();
     } catch (NoSuchElementException exc) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found.", exc);
-    } catch (Exception err) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unknown error.", err);
+      throw new TaskNotFoundException(id);
     }
   }
 
   @CachePut(value = "task", key = "#id")
-  public TaskEntity updateOne(Long id, TaskEntity entity) {
-    TaskEntity task = taskRepository.findById(id).get();
-    task.setStatus(entity.getStatus());
-    taskRepository.save(task);
-    return task;
+  public TaskEntity updateOne(Long id, TaskEntity entity) throws TaskNotFoundException, TaskUpdateFailedException {
+    try {
+      TaskEntity task = taskRepository.findById(id).get();
+      task.setStatus(entity.getStatus());
+      taskRepository.save(task);
+      return task;
+    } catch (NoSuchElementException err) {
+      throw new TaskNotFoundException(id);
+    } catch (IllegalArgumentException err) {
+      throw new TaskUpdateFailedException(id);
+    }
   }
 
   @CacheEvict(value = "task", key = "#id")
   public void removeOne(Long id) {
-    taskRepository.deleteById(id);
+    try {
+      taskRepository.deleteById(id);
+    } catch (IllegalArgumentException err) {
+      throw new TaskDeletionFailedException(id);
+    }
   }
 
   public TaskEntity createOne(TaskEntity task) {
-    return taskRepository.save(task);
+    try {
+      return taskRepository.save(task);
+    } catch (IllegalArgumentException err) {
+      throw new TaskCreationFailedException();
+    }
   }
 
   public List<TaskEntity> createBatch(TaskEntity taskData) {
-    TaskEntity task = this.createOne(taskData);
-    List<TaskEntity> tasks = new ArrayList<TaskEntity>();
-    String[] messages = task.getMessages().split(" ");
-    for (String message : messages) {
-      TaskEntity subTask = new TaskEntity();
-      subTask.setMessages(message);
-      subTask.setParentId(task.getId());
-      tasks.add(subTask);
+    try {
+      TaskEntity task = this.createOne(taskData);
+      List<TaskEntity> tasks = new ArrayList<TaskEntity>();
+      String[] messages = task.getMessages().split(" ");
+      for (String message : messages) {
+        TaskEntity subTask = new TaskEntity();
+        subTask.setMessages(message);
+        subTask.setParentId(task.getId());
+        tasks.add(subTask);
+      }
+      tasks = this.taskRepository.saveAll(tasks);
+      tasks.add(task);
+      return tasks;
+    } catch (IllegalArgumentException err) {
+      throw new TaskBatchCreationFailedException();
     }
-    tasks = this.taskRepository.saveAll(tasks);
-    tasks.add(task);
-    return tasks;
   }
 }
